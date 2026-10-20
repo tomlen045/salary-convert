@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>💰 工资换算器</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:linear-gradient(160deg,#FFF6EE,#FFE8F0);color:#3a2a1a;font-family:-apple-system,'PingFang SC',sans-serif;min-height:100vh}
+.w{max-width:480px;margin:0 auto;padding:24px 18px 60px}
+h1{font-size:25px;text-align:center;margin:10px 0 4px}
+.sub{text-align:center;color:#9c6b4a;font-size:13px;margin-bottom:22px}
+.c{background:#fff;border-radius:20px;padding:24px 20px;box-shadow:0 8px 24px rgba(139,94,60,.12);margin-bottom:16px}
+.q{font-size:18px;font-weight:bold;margin-bottom:16px;line-height:1.5}
+.o{display:block;width:100%;background:#FFF6EE;border:2px solid #F0DCC8;color:#3a2a1a;border-radius:14px;padding:14px;font-size:15px;margin-bottom:10px;cursor:pointer;text-align:left;transition:.15s}
+.o:active{background:#FFE3EC;border-color:#E8A87C}
+.bar{height:6px;background:#F0DCC8;border-radius:99px;margin-bottom:20px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#E8A87C,#D76D77);border-radius:99px;transition:.3s}
+.rn{font-size:32px;text-align:center;font-weight:900;margin:12px 0;color:#3a2a1a}
+.re{text-align:center;font-size:60px}
+.rd{font-size:15px;line-height:1.9;color:#6b4a2f;text-align:center}
+.ch{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:14px 0}
+.cp{background:#FFF3E6;border:1px solid #E8C4A0;border-radius:99px;padding:6px 14px;font-size:13px;color:#8B5E3C;font-weight:bold}
+.pct{font-size:13px;color:#9c6b4a;text-align:center;margin:8px 0}
+.bt{width:100%;background:linear-gradient(90deg,#D76D77,#E8A87C);color:#fff;border:none;border-radius:99px;padding:15px;font-size:16px;font-weight:bold;cursor:pointer;margin-top:8px}
+.bt.g{background:#fff;color:#8B5E3C;border:2px solid #E8A87C}
+.ft{text-align:center;color:#c99b7a;font-size:12px;margin-top:20px}
+canvas{max-width:100%;display:none;margin:12px auto}
+</style></head><body><div class="w" id="app"></div>
+<script>
+const QS = [{"q": "你的月薪范围", "o": [["A", "5000以下"], ["B", "5000-10000"]]}, {"q": "（续上题，如果选了1万以上重新选）", "o": [["A", "10000-20000"], ["B", "20000以上"]]}, {"q": "你每月房租/房贷占工资", "o": [["A", "30%以下"], ["B", "30%以上"]]}, {"q": "你每天工作时长（含通勤）", "o": [["A", "8小时以内"], ["B", "10小时以上"]]}, {"q": "每月外卖/吃饭花费", "o": [["A", "1000以下"], ["B", "2000以上"]]}, {"q": "你每月能存下", "o": [["A", "工资的一半以上"], ["B", "不到三分之一"]]}, {"q": "你觉得你的时薪", "o": [["A", "值这个价"], ["B", "被低估了"]]}, {"q": "如果有额外1000元你会", "o": [["A", "存起来"], ["B", "立刻花掉犒劳自己"]]}];
+const P = {"AAAA": ["存钱铁公鸡", "你的自制力让巴菲特都佩服，但偶尔也要对自己好一点", "💰"], "AAAB": ["快乐月光族", "钱花了才是自己的！活在当下的哲学家", "🎉"], "AABA": ["房租压顶生存者", "房租吃掉了大半工资，但你在为自己的未来咬牙坚持", "🏠"], "AABB": ["高薪高支出精英", "赚得多花得多，你的生活品质就是你的名片", "💎"], "ABAA": ["攒钱小能手", "虽然赚得不多，但每一分都花在刀刃上", "🧮"], "ABAB": ["奶茶自由战士", "时薪不够奶茶自由？那就加加班！", "🧋"], "ABBA": ["时间贩卖者", "你用时间换钱，但别忘了投资自己", "⏰"], "ABBB": ["被低估的价值洼地", "你的能力配得上更高的薪水，是时候谈判了", "📈"], "BAAA": ["理财小白兔", "开始存钱就是最好的开始，复利会感谢你", "🐰"], "BAAB": ["犒劳型消费者", "辛苦赚钱就是为了开心花钱，没毛病", "🛍"], "BABA": ["城市生存战士", "大城市的生活成本压不垮你，你是真的猛士", "🌆"], "BABB": ["高收入高负担", "赚得多但压力也大，注意身体比什么都重要", "🏥"], "BBAA": ["财务规划师", "你的钱每一步都有规划，未来可期", "📊"], "BBAB": ["享受人生派", "赚钱就是为了花钱，你活得很通透", "🌅"], "BBBA": ["价值被低估者", "你的时薪应该更高，是时候跟老板谈谈了", "⬆️"], "BBBB": ["财富自由预备役", "你已经走在正确的路上，继续坚持", "🚀"]};
+let cur = 0, ans = [];
+const app = document.getElementById("app");
+function home() {
+  app.innerHTML = `<h1>💰 工资换算器</h1><p class="sub">你的时薪能买几杯奶茶？</p>
+  <div class="c"><p class="q">准备好了吗？</p>
+  <p style="font-size:14px;color:#9c6b4a;line-height:1.9">月薪1万已超过80%的人——但你的时薪能买什么？输入月薪，一键换算成奶茶/煎饼/外卖/房租<br>做完看看你是哪种类型 🎯</p>
+  <button class="bt" onclick="start()">🎯 开始</button></div>
+  <p class="ft">🔍 搜「小薅薅」看更多</p>`;
+}
+function start(){cur=0;ans=[];render();}
+function render(){
+  const q=QS[cur];
+  app.innerHTML=`<div class="bar"><i style="width:${cur/QS.length*100}%"></i></div>
+  <div class="c"><p class="q">${q.q}</p>
+  ${q.o.map((o,i)=>`<button class="o" onclick="pick('${o[0]}')">${o[1]}</button>`).join("")}
+  </div>`;
+}
+function pick(k){ans.push(k);cur++;cur<QS.length?render():result();}
+function result(){
+  const c=ans.join("");const p=P[c]||["神秘人","你的组合太独特了"];
+  app.innerHTML=`<p class="re">${p[2]||"🎯"}</p><p class="rn">${p[0]}</p>
+  <div class="c"><p class="rd">${p[1]}</p>
+  <div class="ch"><span class="cp">你的代号 ${c}</span></div></div>
+  <canvas id="cd" width="1080" height="1440" style="display:none"></canvas>
+  <button class="bt" onclick="dlCard()">⬇️ 保存分享卡片</button>
+  <button class="bt g" onclick="home()">🔄 再测一次</button>
+  <p class="ft">🔍 搜「小薅薅」看更多</p>`;
+  drawCard(c,p);window.scrollTo(0,0);
+}
+function drawCard(code,p){
+  const x=document.getElementById("cd").getContext("2d");
+  const g=x.createLinearGradient(0,0,1080,1440);g.addColorStop(0,"#FFF6EE");g.addColorStop(1,"#FFD9E3");
+  x.fillStyle=g;x.fillRect(0,0,1080,1440);
+  x.textAlign="center";x.font="130px sans-serif";x.fillStyle="#3a2a1a";x.fillText(p[2]||"🎯",540,300);
+  x.font="900 80px sans-serif";x.fillStyle="#3a2a1a";x.fillText(p[0],540,480);
+  x.font="28px sans-serif";x.fillStyle="#8B5E3C";x.fillText(code,540,550);
+  x.font="32px sans-serif";x.fillStyle="#6b4a2f";
+  wrapTxt(x,p[1],540,640,880,48);
+  x.fillStyle="#8B5E3C";x.font="bold 30px sans-serif";x.fillText("🔍 搜「小薅薅」看更多",540,1360);
+}
+function wrapTxt(x,txt,cx,sy,maxw,lh){
+  let line="",y=sy;
+  for(const ch of txt){if(x.measureText(line+ch).width>maxw){x.fillText(line,cx,y);line=ch;y+=lh;}else line+=ch;}
+  x.fillText(line,cx,y);
+}
+function dlCard(){
+  const a=document.createElement("a");a.download="salary-convert-card.png";
+  a.href=document.getElementById("cd").toDataURL();a.click();
+}
+home();
+</script></body></html>
