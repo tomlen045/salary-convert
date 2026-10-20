@@ -1,0 +1,8 @@
+# 内部文件，不进公开仓库
+公众号排版版.html
+封面*.png
+report.md
+screenshots草稿/
+cards/
+*cover*.py
+.DS_Store
